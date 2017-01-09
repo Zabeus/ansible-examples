@@ -1,0 +1,60 @@
+---
+- name: fetch i2b2 sample data from S3
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.createdb.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.createdb.zip }}
+
+- name: clean up data folder in {{ i2b2_artifacts.createdb.dir }} (workaround for repeated 1.7.07 run)
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.data
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.data
+  when: i2b2_version >= 1707
+
+- name: ensure i2b2 working directory exists
+  command: mkdir -p /var/tmp/{{ i2b2_artifacts.createdb.dir }}
+  args:
+    creates: /var/tmp/{{ i2b2_artifacts.createdb.dir }}
+
+- name: extract i2b2 sample data
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.createdb.zip }}
+              dest=/var/tmp/{{ i2b2_artifacts.createdb.dir }}
+              copy=no
+
+- name: move contents of i2b2-data-VERSION up one level (workaround for 1.7.07)
+  shell: mv -f /var/tmp/{{ i2b2_artifacts.createdb.dir }}/{{ i2b2_artifacts.createdb.git_dir }}/* /var/tmp/{{ i2b2_artifacts.createdb.dir }}/
+  args:
+    creates: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.data
+  when: i2b2_version >= 1707
+
+- name: clean up i2b2-data-VERSION (workaround for repeated 1.7.07 run)
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/i2b2-data-{{ i2b2_version_dotted }}
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/i2b2-data-{{ i2b2_version_dotted }}/edu.harvard.i2b2.data
+  when: i2b2_version >= 1707
+
+- name: set ownership on /var/tmp/{{ i2b2_artifacts.createdb.dir }}
+  file: path=/var/tmp/{{ i2b2_artifacts.createdb.dir }}
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }}
+        state=directory recurse=yes
+
+- name: template db.properties for cells
+  tags: dbprops
+  template: src=i2b2-overrides/{{ i2b2_db_type }}/db-props/{{ item.cell }}/db.properties
+            dest=/var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.data/Release_{{ i2b2_version_major }}/NewInstall/{{ item.cell }}//db.properties
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_items: i2b2_ant_db_tasks
+
+- name: execute ant scripts for data insertion (Crcdata and Metadata may take a while!)
+  tags: ant
+  shell: . /etc/profile && ant -f data_build.xml {{ item.1 }}
+  args:
+    chdir: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.data/Release_{{ i2b2_version_major }}/NewInstall/{{ item.0.cell }}
+    creates: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/.data_imported
+  with_subelements:
+    - i2b2_ant_db_tasks
+    - db_tasks
+
+- name: touch .data_imported file in i2b2 working directory (remove file to re-run ant tasks)
+  tags: axis
+  file: path=/var/tmp/{{ i2b2_artifacts.createdb.dir }}/.data_imported
+        state=touch

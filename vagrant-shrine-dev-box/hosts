@@ -1,0 +1,3 @@
+# this is only for the ansible_local provisioner
+[shrine-dev]
+vagrant-shrine-dev-box ansible_connection=local

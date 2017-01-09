@@ -1,0 +1,12 @@
+---
+- name: install httpd
+  yum: name=httpd state=present
+
+- name: install AJP proxy directives for i2b2
+  template: src=etc/httpd/conf.d/proxy_i2b2.conf
+            dest=/etc/httpd/conf.d/proxy_i2b2.conf
+            owner=root group=root mode=0644
+  notify: restart httpd
+
+- name: start and enable httpd
+  service: name=httpd state=started enabled=yes

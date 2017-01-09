@@ -1,0 +1,21 @@
+---
+- include: sudo.yml
+  tags: i2b2,sudo
+- include: postgresql.yml
+  tags: i2b2,postgresql
+- include: httpd.yml
+  tags: i2b2,httpd
+- include: php.yml
+  tags: i2b2,php
+- include: java.yml
+  tags: i2b2,java
+- include: ant.yml
+  tags: i2b2,ant
+- include: i2b2dataprep.yml
+  tags: i2b2,i2b2dataprep
+- include: i2b2data.yml
+  tags: i2b2,i2b2data
+- include: i2b2jboss.yml
+  tags: i2b2,i2b2jboss
+- include: i2b2jbosspatch.yml
+  tags: i2b2,i2b2jbosspatch

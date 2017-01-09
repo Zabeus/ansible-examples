@@ -1,0 +1,55 @@
+commit 0673c589780c2a7b3d391206773cd6f5d0464222
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Fri Sep 23 11:24:55 2016 -0400
+
+    add jboss conditional to commons-collections-3.2.1.jar check
+
+commit 59b186ccc25c586291d0ab626441346aa127c02f
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Sep 22 19:18:30 2016 -0400
+
+    add compatibility for i2b2 1.7.08 (default is still 1.7.07)
+
+commit 8864724dacc6e60a7fbdf29a3cab7c3debbbbe2a
+Merge: 5c5ab73 a437eeb
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Apr 14 11:50:18 2016 -0400
+
+    Merge pull request #2 in SHRINE/ansible-role-i2b2 from kdwyer-work to master
+    
+    * commit 'a437eeb423f8c131730875ce6c4f39bf3fc53c5d':
+      add missing ant tag to .app_built task
+
+commit a437eeb423f8c131730875ce6c4f39bf3fc53c5d
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Apr 14 11:49:32 2016 -0400
+
+    add missing ant tag to .app_built task
+
+commit 5c5ab73dc031081c37ad27c1f2b68dd0e6ef3cce
+Merge: a35d4be a10d3ad
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Tue Apr 12 15:04:23 2016 -0400
+
+    Merge pull request #1 in SHRINE/ansible-role-i2b2 from kdwyer-work to master
+    
+    * commit 'a10d3adc4928513fd664e8094ddb139c457d340e':
+      add .gitignore
+
+commit a10d3adc4928513fd664e8094ddb139c457d340e
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Tue Apr 12 15:03:40 2016 -0400
+
+    add .gitignore
+
+commit a35d4be6a258607aafb0f654d6e695653a06e933
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Fri Apr 8 12:13:08 2016 -0400
+
+    add meta/main.yml
+
+commit fe7ca04612442abcaef780221c9eaccf27ce57cf
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Apr 7 14:53:28 2016 -0400
+
+    initial commit, imported from sysconfig/roles/i2b2 and fixed to work with i2b2 1.7.07

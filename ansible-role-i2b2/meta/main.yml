@@ -1,0 +1,15 @@
+---
+galaxy_info:
+  author: Keith Dwyer
+  description: i2b2 Installer
+  company: Harvard Medical School - Harvard Catalyst
+  issue_tracker_url: https://open.med.harvard.edu/jira/browse/SHRINE
+  license: GPLv3
+  min_ansible_version: 1.9
+  platforms:
+    - name: EL
+      versions:
+        - 6
+  categories:
+    - i2b2
+dependencies: []

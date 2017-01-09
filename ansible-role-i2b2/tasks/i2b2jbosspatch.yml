@@ -1,0 +1,15 @@
+---
+- name: check commons-collections-3.2.1.jar 
+  stat: 
+    path: /opt/{{ i2b2_artifacts.jboss.dir }}/modules/org/apache/commons/collections/main/commons-collections-3.2.1.jar
+  register: commons_jar
+  when: i2b2_artifacts.jboss.type == "jboss"
+
+- name: patch vulnerable commons-collections-3.2.1.jar file in JBoss 7.1.1
+  tags: jbosspatch
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/commons-collections-3.2.1-item-944.jar
+    dest: /opt/{{ i2b2_artifacts.jboss.dir }}/modules/org/apache/commons/collections/main/commons-collections-3.2.1.jar
+    force: yes
+  when: i2b2_artifacts.jboss.type == "jboss" and commons_jar.stat.checksum != "deb5109cb8f2b79e8111916a6ef5d7c18d01fa06"
+  notify: restart jboss

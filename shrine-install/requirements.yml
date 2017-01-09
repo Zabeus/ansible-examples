@@ -1,0 +1,6 @@
+---
+# to update run: ansible-galaxy install -f -p roles -r requirements.yml
+- src: https://open.med.harvard.edu/stash/scm/SHRINE/ansible-role-shrine.git
+  scm: git
+  version: master
+  name: shrine

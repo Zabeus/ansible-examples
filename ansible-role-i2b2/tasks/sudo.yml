@@ -1,0 +1,6 @@
+---
+- name: install /etc/sudoers.d/i2b2
+  template: src=etc/sudoers.d/i2b2
+            dest=/etc/sudoers.d/i2b2
+            owner=root group=root mode=0440
+            validate='visudo -cf %s'

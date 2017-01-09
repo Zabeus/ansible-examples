@@ -1,0 +1,39 @@
+---
+- name: fetch PostgreSQL 9.4 repo RPM from S3
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/{{ postgresql94_repo_rpm }}
+    dest: /var/tmp/{{ postgresql94_repo_rpm }}
+    
+- name: add PostgreSQL 9.4 repo
+  yum: name=/var/tmp/{{ postgresql94_repo_rpm }} state=present
+
+- name: install postgresql packages
+  yum: name={{ item }} state=present
+  with_items: postgresql_packages
+
+- name: initialize PostgreSQL 9.4 database
+  command: /usr/pgsql-9.4/bin/initdb --pgdata=/var/lib/pgsql/9.4/data --auth=ident --locale=en_US.utf8
+           creates=/var/lib/pgsql/9.4/data/PG_VERSION
+  sudo: yes
+  sudo_user: postgres
+
+- name: install pg_hba.conf
+  template: src=var/lib/pgsql/9.4/data/pg_hba.conf
+            dest=/var/lib/pgsql/9.4/data/pg_hba.conf
+            owner=postgres group=postgres mode=0600
+  notify: restart postgresql
+
+- name: start and enable postgresql-9.4
+  service: name=postgresql-9.4 state=started enabled=yes
+
+- name: set password for postgresql postgres user
+  postgresql_user: name=postgres
+                   password={{ postgresql_root_password }}
+                   encrypted=no
+  sudo: yes
+  sudo_user: postgres
+
+- name: add postgresql environment variables
+  template: src=etc/profile.d/postgresql.sh
+            dest=/etc/profile.d/postgresql.sh
+            owner=root group=root mode=0644

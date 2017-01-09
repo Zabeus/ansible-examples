@@ -1,0 +1,9 @@
+---
+- name: restart httpd
+  service: name=httpd state=restarted
+
+- name: restart jboss
+  service: name=jboss state=restarted
+
+- name: restart postgresql
+  service: name=postgresql-9.4 state=restarted

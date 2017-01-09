@@ -1,0 +1,24 @@
+---
+# boto_env should be set to AWS credentials that provide access to the S3
+# bucket specified in variable s3_artifacts_bucket in
+# host_vars/vagrant-shrine-dev-box/config
+
+boto_env:
+  AWS_ACCESS_KEY_ID: XXXXXXXXXXXXXXXXXXXX
+  AWS_SECRET_ACCESS_KEY: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# subversion_username and subversion_password should be set to credentials that
+# provide access to Ansible roles in open.med Stash
+
+subversion_username: XXXXXXXX
+subversion_password: XXXXXXXX
+
+# git_username and git_password should be set to credentials that provide
+# access to Ansible roles in open.med Stash
+
+git_username: XXXXXXXX
+git_password: XXXXXXXX
+
+# tell SHRINE installer we want to use the default standalone demo settings
+is_local_i2b2: false
+settings_verified: true

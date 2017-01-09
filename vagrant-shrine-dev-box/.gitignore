@@ -1,0 +1,5 @@
+extra_vars.yml
+shrine-dev.yml
+filter_plugins/
+roles/i2b2/
+roles/shrine/

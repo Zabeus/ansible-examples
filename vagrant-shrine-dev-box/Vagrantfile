@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.define "vagrant-shrine-dev-box"
+
+  config.vm.box = "harvardcatalyst/centos-6-core"
+  config.vm.box_version = "0.0.1"
+
+  config.vm.provision "shell", path: "install-ansible.sh"
+
+  # so ansible_local provisioner can access galaxy requirements
+  config.vm.provision "shell", path: "install-netrc.sh"
+
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.galaxy_role_file = "requirements.yml"
+    ansible.inventory_path = "hosts"
+    ansible.playbook = "main.yml"
+    ansible.sudo = true
+    ansible.extra_vars = "extra_vars.yml"
+    ansible.verbose = "v"
+  end
+
+  config.vm.provision "shell", path: "remove-netrc.sh"
+
+  # shrine ports
+  config.vm.network "forwarded_port", guest: 6060, host: 6060
+  config.vm.network "forwarded_port", guest: 6443, host: 6443
+  # jpda port for shrine tomcat
+  config.vm.network "forwarded_port", guest: 8000, host: 8000
+  # i2b2 ports
+  config.vm.network "forwarded_port", guest: 80,   host: 8080
+  config.vm.network "forwarded_port", guest: 9009, host: 9009
+  config.vm.network "forwarded_port", guest: 9090, host: 9090
+
+end

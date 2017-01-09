@@ -1,0 +1,39 @@
+commit 0e67f89ea81c3d29c8dd747b3768e9fc2f820d67
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Sep 22 19:33:10 2016 -0400
+
+    bump default version to 1.21.2
+
+commit 824df3245452772450aec3400438d4079145f805
+Merge: a1797e6 67f28f1
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Tue May 17 12:58:54 2016 -0400
+
+    Merge pull request #1 in SHRINE/shrine-install from galaxy-role to master
+    
+    * commit '67f28f17035caeb4b08b789cd29bd399448fbdd1':
+      remove old installer, use Galaxy role instead
+
+commit 67f28f17035caeb4b08b789cd29bd399448fbdd1
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Tue May 17 12:56:13 2016 -0400
+
+    remove old installer, use Galaxy role instead
+
+commit a1797e6fedd2c425e8b8aa8e7fc1a54b3c6d60ba
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Mar 31 10:15:23 2016 -0400
+
+    include note about i2b2 in README.md
+
+commit 675cea8d192284c4911399750203749ee7bef43c
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Thu Mar 31 10:13:37 2016 -0400
+
+    update host_vars to match current role vars
+
+commit 7bda8ce42a4a8739107cd755490da063c7760138
+Author: Keith Dwyer <keith_dwyer@hms.harvard.edu>
+Date:   Wed Mar 30 19:05:17 2016 -0400
+
+    initial commit

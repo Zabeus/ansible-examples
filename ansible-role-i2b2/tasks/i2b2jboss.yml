@@ -1,0 +1,324 @@
+---
+- name: fetch JBoss 7.1.1 (or Wildfly 10) from S3
+  tags: jboss
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.jboss.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.jboss.zip }}
+
+- name: fetch Axis2 from S3
+  tags: axis
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.axis.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.axis.zip }}
+
+- name: extract jboss archive
+  tags: jboss
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.jboss.zip }}
+              dest=/opt/
+              copy=no
+
+- name: create /opt/jboss symlink
+  tags: jboss
+  file: src=/opt/{{ i2b2_artifacts.jboss.dir }}
+        dest=/opt/jboss
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} state=link
+
+- name: create axis2 directory
+  tags: axis
+  file: path=/var/tmp/{{ i2b2_artifacts.axis.dir }}
+        state=directory
+
+- name: extract axis2 archive
+  tags: axis
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.axis.zip }}
+              dest=/var/tmp/{{ i2b2_artifacts.axis.dir }}
+              copy=no
+
+- name: create i2b2.war directory in jboss deployments directory
+  tags: axis
+  file: path=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/deployments/i2b2.war
+        state=directory
+
+- name: touch i2b2.war.dodeploy file in jboss deployments directory
+  tags: axis
+  file: path=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/deployments/i2b2.war.dodeploy
+        state=touch
+
+- name: unzip contents of axis2.war into i2b2.war directory
+  tags: axis
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.axis.dir }}/axis2.war
+              dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/deployments/i2b2.war/
+              copy=no
+
+- name: set ownership on /opt/{{ i2b2_artifacts.jboss.dir }}
+  tags: jboss
+  file: path=/opt/{{ i2b2_artifacts.jboss.dir }}
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }}
+        state=directory recurse=yes
+
+- name: install jboss init.d script
+  tags: jboss
+  copy: src=etc/init.d/jboss
+        dest=/etc/init.d/jboss
+        owner=root group=root mode=0755
+
+- name: ensure /etc/jboss-as exists
+  tags: jboss
+  command: mkdir -p /etc/jboss-as
+  args:
+    creates: /etc/jboss-as
+
+- name: install jboss init.d script vars file
+  tags: jboss
+  template: src=etc/jboss-as/jboss-as.conf
+            dest=/etc/jboss-as/jboss-as.conf
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+
+- name: install jboss profile fragment
+  template: src=etc/profile.d/jboss.sh
+            dest=/etc/profile.d/jboss.sh
+            owner=root group=root mode=0644
+
+- name: enable jboss
+  tags: jboss
+  service: name=jboss enabled=yes
+  notify: restart jboss
+
+- name: fetch i2b2 core source from S3
+  tags: i2b2build
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.core.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.core.zip }}
+
+- name: fetch i2b2 webclient from S3
+  tags: i2b2build
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.webclient.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.webclient.zip }}
+
+- name: clean up edu.harvard.i2b2.* folders in {{ i2b2_artifacts.createdb.dir }} (workaround for repeated 1.7.07 run)
+  tags: i2b2build
+  shell: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.*
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/edu.harvard.i2b2.crc
+  when: i2b2_version >= 1707
+
+- name: clean up admin folder in {{ i2b2_artifacts.createdb.dir }} (workaround for repeated 1.7.07 run)
+  tags: i2b2build
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/admin
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/admin
+  when: i2b2_version >= 1707
+
+- name: clean up webclient folder in {{ i2b2_artifacts.createdb.dir }} (workaround for repeated 1.7.07 run)
+  tags: i2b2build
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/webclient
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/webclient
+  when: i2b2_version >= 1707
+
+- name: ensure i2b2 working directory exists
+  tags: i2b2build
+  command: mkdir -p /var/tmp/{{ i2b2_artifacts.core.dir }}
+  args:
+    creates: /var/tmp/{{ i2b2_artifacts.core.dir }}
+
+- name: extract i2b2 core archive
+  tags: i2b2build
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.core.zip }}
+              dest=/var/tmp/{{ i2b2_artifacts.core.dir }}
+              copy=no
+
+- name: extract i2b2 webclient archive
+  tags: i2b2build
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.webclient.zip }}
+              dest=/var/tmp/{{ i2b2_artifacts.webclient.dir }}
+              copy=no
+
+- name: move contents of i2b2core-src-VERSION up one level (workaround for 1.7.07)
+  tags: i2b2build
+  shell: mv -f /var/tmp/{{ i2b2_artifacts.core.dir }}/{{ i2b2_artifacts.core.git_dir }}/* /var/tmp/{{ i2b2_artifacts.core.dir }}/
+  args:
+    creates: /var/tmp/{{ i2b2_artifacts.core.dir }}/edu.harvard.i2b2.crc
+  when: i2b2_version >= 1707
+
+- name: clean up i2b2core-src-VERSION (workaround for repeated 1.7.07 runs)
+  tags: i2b2build
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.core.dir }}/{{ i2b2_artifacts.core.git_dir }}/
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.core.dir }}/{{ i2b2_artifacts.core.git_dir }}/edu.harvard.i2b2.crc
+  when: i2b2_version >= 1707
+
+- name: move contents of i2b2webclient-VERSION up one level (workaround for 1.7.07) (not applicable to 1.7.08)
+  tags: i2b2build
+  shell: mv -f /var/tmp/{{ i2b2_artifacts.webclient.dir }}/i2b2webclient-{{ i2b2_version }}/* /var/tmp/{{ i2b2_artifacts.createdb.dir }}/
+  args:
+    creates: /var/tmp/{{ i2b2_artifacts.webclient.dir }}/webclient
+  when: i2b2_version == 1707
+
+- name: clean up i2b2webclient-VERSION (workaround for repeated 1.7.07 runs) (not applicable to 1.7.08)
+  tags: i2b2build
+  command: rm -rf /var/tmp/{{ i2b2_artifacts.createdb.dir }}/i2b2webclient-{{ i2b2_version }}/
+  args:
+    removes: /var/tmp/{{ i2b2_artifacts.createdb.dir }}/i2b2webclient-{{ i2b2_version }}/webclient
+  when: i2b2_version == 1707
+
+- name: set ownership on /var/tmp/{{ i2b2_artifacts.core.dir }}
+  tags: i2b2build
+  file: path=/var/tmp/{{ i2b2_artifacts.core.dir }}
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }}
+        state=directory recurse=yes
+
+- name: copy i2b2 admin client to /var/www/html
+  tags: i2b2build
+  command: mv /var/tmp/{{ i2b2_artifacts.core.dir }}/admin /var/www/html/admin
+  args:
+    creates: /var/www/html/admin
+  when: i2b2_version < 1708
+
+- name: copy i2b2 webclient to /var/www/html
+  tags: i2b2build
+  command: mv /var/tmp/{{ i2b2_artifacts.webclient.dir }}/{{ i2b2_artifacts.webclient.git_dir }} /var/www/html/webclient
+  args:
+    creates: /var/www/html/webclient
+
+- name: template i2b2 admin client config
+  tags: i2b2build
+  template: src=var/www/html/admin/i2b2_config_data.js
+            dest=/var/www/html/admin/i2b2_config_data.js
+            owner=apache group=apache mode=0644
+  when: i2b2_version < 1708
+
+- name: template i2b2 webclient config
+  tags: i2b2build
+  template: src=var/www/html/webclient/i2b2_config_data.js
+            dest=/var/www/html/webclient/i2b2_config_data.js
+            owner=apache group=apache mode=0644
+
+- name: set ownership of /var/www/html to apache
+  tags: i2b2build
+  file: path=/var/www/html
+        owner=apache group=apache
+        state=directory recurse=yes
+  notify: restart httpd
+
+- name: template out build.properties file for i2b2.server-common
+  tags: i2b2build
+  template: src=i2b2-overrides/db-agnostic/edu.harvard.i2b2.server-common/build.properties
+            dest=/var/tmp/{{ i2b2_artifacts.core.dir }}/edu.harvard.i2b2.server-common/build.properties
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+
+- name: template out build.properties files for i2b2 builds
+  tags: i2b2build
+  template: src=i2b2-overrides/db-agnostic/{{ item }}/build.properties
+            dest=/var/tmp/{{ i2b2_artifacts.core.dir }}/{{ item }}/build.properties
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_items: i2b2_ant_build_cells
+
+- name: template out *_application_directory.properties files for i2b2 builds
+  tags: i2b2build
+  template: src=i2b2-overrides/db-agnostic/{{ item }}
+            dest=/var/tmp/{{ i2b2_artifacts.core.dir }}/{{ item }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_items: i2b2_ant_app_dir_cells
+
+- name: execute ant build for i2b2.server-common
+  tags: ant
+  shell: . /etc/profile && ant clean dist deploy jboss_pre_deployment_setup
+  args:
+    chdir: /var/tmp/{{ i2b2_artifacts.core.dir }}/edu.harvard.i2b2.server-common
+    creates: /var/tmp/{{ i2b2_artifacts.core.dir }}/.app_built
+
+- name: execute ant builds for i2b2 cells
+  tags: ant
+  shell: . /etc/profile && ant -f master_build.xml clean build-all deploy
+  args:
+    chdir: /var/tmp/{{ i2b2_artifacts.core.dir }}/{{ item }}
+    creates: /var/tmp/{{ i2b2_artifacts.core.dir }}/.app_built
+  with_items: i2b2_ant_build_cells
+
+- name: touch .app_built file in i2b2 working directory (remove file to re-run ant tasks)
+  tags: 
+    - axis
+    - ant
+  file: path=/var/tmp/{{ i2b2_artifacts.core.dir }}/.app_built
+        state=touch
+
+- name: ensure JBoss is shut down before modifying configuration
+  tags:
+    - i2b2config
+  service: name=jboss state=stopped
+
+- name: template datasource XML files
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/deployments/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/ds-xml/*.xml
+
+- name: template standalone.xml (JBoss 7)
+  tags:
+    - i2b2config
+  template: src=i2b2-overrides/{{ i2b2_db_type }}/jboss-config/standalone_jboss.xml
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/standalone.xml
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  when: i2b2_artifacts.jboss.type == "jboss"
+  notify: restart jboss
+
+- name: template standalone.xml (Wildfly 10)
+  tags:
+    - i2b2config
+  template: src=i2b2-overrides/{{ i2b2_db_type }}/jboss-config/standalone_wildfly.xml
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/standalone.xml
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  when: i2b2_artifacts.jboss.type == "wildfly"
+  notify: restart jboss
+
+- name: template configuration files for crcapp
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/crcapp/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/jboss-config/crcapp/*
+
+- name: template configuration files for frapp
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/frapp/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/jboss-config/frapp/*
+
+- name: template configuration files for imapp
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/imapp/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/jboss-config/imapp/*
+
+- name: template configuration files for ontologyapp
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/ontologyapp/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/jboss-config/ontologyapp/*
+
+- name: template configuration files for workplaceapp
+  tags:
+    - i2b2config
+  template: src={{ item }}
+            dest=/opt/{{ i2b2_artifacts.jboss.dir }}/standalone/configuration/workplaceapp/{{ item | basename }}
+            owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }} mode=0644
+  with_fileglob: ../templates/i2b2-overrides/{{ i2b2_db_type }}/jboss-config/workplaceapp/*
+
+- name: set ownership on /opt/{{ i2b2_artifacts.jboss.dir }}
+  tags:
+    - i2b2config
+  file: path=/opt/{{ i2b2_artifacts.jboss.dir }}
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }}
+        state=directory recurse=yes
+  notify: restart jboss

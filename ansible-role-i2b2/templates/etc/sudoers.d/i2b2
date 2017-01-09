@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+{{ i2b2_shell_user }} ALL=(postgres) NOPASSWD: /usr/bin/psql
+{{ i2b2_shell_user }} ALL=(root) NOPASSWD: /sbin/service jboss *
+
+%{{ i2b2_shell_user }} ALL=({{ i2b2_shell_user }}) NOPASSWD: ALL

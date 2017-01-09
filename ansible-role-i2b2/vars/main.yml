@@ -1,0 +1,43 @@
+---
+i2b2_ant_db_tasks:
+  - cell: Crcdata
+    db_tasks:
+      - create_crcdata_tables_release_{{ i2b2_version_major }}
+      - create_procedures_release_{{ i2b2_version_major }}
+      - db_demodata_load_data
+  - cell: Hivedata
+    db_tasks:
+      - create_hivedata_tables_release_{{ i2b2_version_major }}
+      - db_hivedata_load_data
+  - cell: Imdata
+    db_tasks:
+      - create_imdata_tables_release_{{ i2b2_version_major }}
+      - db_imdata_load_data
+  - cell: Metadata
+    db_tasks:
+      - create_metadata_tables_release_{{ i2b2_version_major }}
+      - db_metadata_load_data
+  - cell: Pmdata
+    db_tasks:
+      - create_pmdata_tables_release_{{ i2b2_version_major }}
+      - create_triggers_release_{{ i2b2_version_major }}
+      - db_pmdata_load_data
+  - cell: Workdata
+    db_tasks:
+      - create_workdata_tables_release_{{ i2b2_version_major }}
+      - db_workdata_load_data
+
+i2b2_ant_build_cells:
+  - edu.harvard.i2b2.crc
+  - edu.harvard.i2b2.fr
+  - edu.harvard.i2b2.im
+  - edu.harvard.i2b2.ontology
+  - edu.harvard.i2b2.pm
+  - edu.harvard.i2b2.workplace
+
+i2b2_ant_app_dir_cells:
+  - edu.harvard.i2b2.crc/etc/spring/crc_application_directory.properties
+  - edu.harvard.i2b2.fr/etc/spring/fr_application_directory.properties
+  - edu.harvard.i2b2.im/etc/spring/im_application_directory.properties
+  - edu.harvard.i2b2.ontology/etc/spring/ontology_application_directory.properties
+  - edu.harvard.i2b2.workplace/etc/spring/workplace_application_directory.properties

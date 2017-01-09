@@ -1,0 +1,41 @@
+---
+- name: create i2b2 users in postgresql
+  postgresql_user: name={{ item.value.owner }}
+                   password={{ item.value.pass }}
+                   encrypted=no
+                   role_attr_flags=LOGIN,NOSUPERUSER,NOCREATEDB
+  sudo: yes
+  sudo_user: postgres
+  with_dict: i2b2_cells
+
+- name: create i2b2 databases in postgresql
+  postgresql_db:  name={{ item.value.db }}
+                  owner={{ item.value.owner }}
+  sudo: yes
+  sudo_user: postgres
+  with_dict: i2b2_cells
+
+- name: grant privileges on databases to i2b2 users in postgresql
+  postgresql_privs: db={{ item.value.db }}
+                    type=database
+                    role={{ item.value.owner }}
+                    privs=ALL
+  sudo: yes
+  sudo_user: postgres
+  with_dict: i2b2_cells
+
+- name: create i2b2 schemas in postgresql
+  command: psql -U postgres -d {{ item.value.db }} -c "CREATE SCHEMA IF NOT EXISTS {{ item.value.schema }}"
+  sudo: yes
+  sudo_user: postgres
+  with_dict: i2b2_cells
+
+- name: grant privileges on schemas to i2b2 database users in postgresql
+  postgresql_privs: db={{ item.value.db }}
+                    type=schema
+                    obj={{ item.value.schema }}
+                    role={{ item.value.owner }}
+                    privs=ALL
+  sudo: yes
+  sudo_user: postgres
+  with_dict: i2b2_cells

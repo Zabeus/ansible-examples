@@ -1,0 +1,129 @@
+---
+s3_artifacts_bucket: catalyst-artifacts
+s3_backup_bucket: catalyst-backup
+
+admin_email_user: XXXX
+admin_email_domain: YYYY
+
+global_users:
+  i2b2:
+    uid: 1011
+    shell: /bin/bash
+    home: /home/i2b2
+    comment: i2b2 User
+    email: XXXX@YYYY
+    keys: []
+  shrine:
+    uid: 1013
+    shell: /bin/bash
+    home: /home/shrine
+    comment: SHRINE User
+    email: XXXX@YYYY
+    keys: []
+
+users:
+  - name: i2b2
+    groups: []
+  - name: shrine
+    groups: []
+
+shrine_version: 1.20.1
+shrine_node_name: SHRINE Dev Box
+
+shrine_stash_url_suffix: "?at=release%2F1.21.0&raw" # workaround for broken 1.20.1 DB scripts
+shrine_db_scripts:
+  - name: hub.sql
+    repo_path: hub/broadcaster-aggregator/src/main/sql/hub.sql
+    db: "{{ shrine_db.shrineDB.db }}"
+  - name: adapter.sql
+    repo_path: adapter/adapter-service/src/main/sql/adapter.sql
+    db: "{{ shrine_db.shrineDB.db }}"
+  - name: create_broadcaster_audit_table.sql
+    repo_path: qep/service/src/main/sql/create_broadcaster_audit_table.sql
+    db: "{{ shrine_db.shrineDB.db }}"
+  - name: adapterAuditDB.sql
+    repo_path: adapter/adapter-service/src/main/sql/mysql.ddl
+    db: "{{ shrine_db.adapterAuditDB.db }}"
+  - name: qepAuditDB.sql
+    repo_path: qep/service/src/main/sql/mysql.ddl
+    db: "{{ shrine_db.qepAuditDB.db }}"
+
+java_tarball: jdk-7u79-linux-x64.tar.gz
+java_exploded_dirname: jdk1.7.0_79
+
+postgresql94_repo_rpm: pgdg-centos94-9.4-1.noarch.rpm
+postgresql_packages:
+  - postgresql94-libs
+  - postgresql94
+  - postgresql94-server
+  - postgresql94-contrib
+  - python-psycopg2
+postgresql_root_password: demouser
+
+i2b2_version: 1707 # used for naming/downloading artifacts, ver format: XYzz (z is zero-padded right to 2 characters)
+i2b2_version_major: "1-7" # used for determining paths and task names for data installation, ver format: X-Y
+i2b2_version_dotted: "1.7.07" # used for certain other directory names, ver format: X.Y.zz (z is zero-padded right to 2 characters)
+i2b2_db_type: postgresql # currently only postgresql is supported
+i2b2_shell_user: i2b2
+i2b2_project_name: demo
+i2b2_domain: i2b2demo
+
+i2b2_demo_user:
+  name: demo
+  pass: demouser
+
+i2b2_ports:
+  ajp: 9009
+  http: 9090
+
+i2b2_artifacts:
+  createdb:
+    zip: i2b2createdb-{{ i2b2_version }}.zip
+    dir: i2b2-src-{{ i2b2_version }} # creates edu.harvard.i2b2.data
+  core:
+    zip: i2b2core-src-{{ i2b2_version }}.zip
+    dir: i2b2-src-{{ i2b2_version }} # creates edu.harvard.i2b2.* folders (and admin/)
+  webclient:
+    zip: i2b2webclient-{{ i2b2_version }}.zip
+    dir: i2b2-src-{{ i2b2_version }} # creates webclient/
+  ant:
+    zip: apache-ant-1.8.4-bin.zip
+    dir: apache-ant-1.8.4 # created by zip
+  axis:
+    zip: axis2-1.6.2-war.zip
+    dir: axis2-1.6.2-war
+  jboss:
+    zip: jboss-as-7.1.1.Final.zip
+    dir: jboss-as-7.1.1.Final # created by zip
+
+i2b2_cells:
+  Crcdata:
+    db:     i2b2demodata
+    schema: public
+    owner:  i2b2demodata
+    pass:   demouser
+  Hivedata:
+    db:     i2b2hive
+    schema: public
+    owner:  i2b2hive
+    pass:   demouser
+  Imdata:
+    db:     i2b2imdata
+    schema: public
+    owner:  i2b2imdata
+    pass:   demouser
+  Metadata:
+    db:     i2b2metadata
+    schema: public
+    owner:  i2b2metadata
+    pass:   demouser
+  Pmdata:
+    db:     i2b2pm
+    schema: public
+    owner:  i2b2pm
+    pass:   demouser
+  Workdata:
+    db:     i2b2workdata
+    schema: public
+    owner:  i2b2workdata
+    pass:   demouser

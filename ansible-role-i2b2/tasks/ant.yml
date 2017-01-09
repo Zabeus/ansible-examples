@@ -1,0 +1,20 @@
+---
+- name: fetch ant from S3
+  get_url:
+    url:  https://{{ s3_artifacts_bucket }}.s3.amazonaws.com/i2b2/{{ i2b2_artifacts.ant.zip }}
+    dest: /var/tmp/{{ i2b2_artifacts.ant.zip }}
+
+- name: extract ant archive
+  unarchive:  src=/var/tmp/{{ i2b2_artifacts.ant.zip }}
+              dest=/opt/
+              copy=no
+
+- name: set ownership on /opt/{{ i2b2_artifacts.ant.dir }}
+  file: path=/opt/{{ i2b2_artifacts.ant.dir }}
+        owner={{ i2b2_shell_user }} group={{ i2b2_shell_user }}
+        state=directory recurse=yes
+
+- name: install ant profile fragment
+  template: src=etc/profile.d/ant.sh
+            dest=/etc/profile.d/ant.sh
+            owner=root group=root mode=0644

@@ -1,0 +1,5 @@
+---
+- name: Install SHRINE locally
+  hosts: localhost
+  roles:
+    - shrine
